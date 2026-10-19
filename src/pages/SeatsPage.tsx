@@ -167,7 +167,7 @@ export default function SeatsPage() {
         </section>
       ) : (
         <div className="seat-layout">
-          <section className="seat-panel" aria-label="좌석 목록">
+          <section className="seat-panel auditorium" aria-label="좌석 목록">
             <div className="stage">STAGE</div>
             <div className="seat-toolbar">
               <label className="search-field">

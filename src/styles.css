@@ -1,16 +1,18 @@
 :root {
   font-family:
     Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #172033;
-  background: #f4f7fb;
+  color: #1d1823;
+  background: #f7f6f9;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --primary: #3157c8;
-  --primary-dark: #2445aa;
+  --primary: #f04464;
+  --primary-dark: #d92f51;
+  --ink: #1d1823;
+  --ink-soft: #30293a;
   --surface: #ffffff;
-  --surface-soft: #eef3ff;
-  --border: #dfe6f1;
-  --muted: #69758a;
+  --surface-soft: #fff0f3;
+  --border: #e9e5ec;
+  --muted: #756d7d;
   --success: #18794e;
   --warning: #9a6700;
   --danger: #bd2c2c;
@@ -25,8 +27,8 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 5% 0%, rgb(49 87 200 / 9%), transparent 26rem),
-    #f4f7fb;
+    radial-gradient(circle at 90% 0%, rgb(240 68 100 / 8%), transparent 30rem),
+    #f7f6f9;
 }
 
 button,
@@ -43,7 +45,7 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid #9eb3f4;
+  outline: 3px solid #ffafbe;
   outline-offset: 3px;
 }
 
@@ -55,6 +57,17 @@ a {
   min-height: 100vh;
 }
 
+.utility-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px max(24px, calc((100vw - 1240px) / 2));
+  color: rgb(255 255 255 / 70%);
+  background: #17121c;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
 .site-header {
   position: sticky;
   z-index: 10;
@@ -62,9 +75,9 @@ a {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  min-height: 72px;
-  padding: 12px max(24px, calc((100vw - 1180px) / 2));
-  border-bottom: 1px solid rgb(223 230 241 / 85%);
+  min-height: 76px;
+  padding: 12px max(24px, calc((100vw - 1240px) / 2));
+  border-bottom: 1px solid rgb(233 229 236 / 88%);
   background: rgb(255 255 255 / 92%);
   backdrop-filter: blur(14px);
 }
@@ -73,19 +86,31 @@ a {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
 }
 
 .brand-mark {
+  position: relative;
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   place-items: center;
-  border-radius: 11px;
+  overflow: hidden;
+  border-radius: 50%;
   color: #fff;
-  background: var(--primary);
+  background: linear-gradient(145deg, #ff5f7c, #b91554 70%);
   font-weight: 800;
+  letter-spacing: -0.08em;
+  box-shadow: 0 7px 18px rgb(217 47 81 / 24%);
+}
+
+.brand-mark i {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 50%;
 }
 
 .brand strong,
@@ -96,8 +121,8 @@ a {
 .brand small {
   margin-top: 2px;
   color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-size: 0.63rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -124,7 +149,7 @@ a {
 .main-nav a:hover,
 .account-nav > a:hover,
 .text-button:hover {
-  color: #1d3f9b;
+  color: var(--primary-dark);
   background: var(--surface-soft);
 }
 
@@ -133,9 +158,20 @@ a {
 }
 
 .user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   margin-right: 4px;
   color: #354158;
   font-weight: 700;
+}
+
+.user-name i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #28a76f;
+  box-shadow: 0 0 0 3px rgb(40 167 111 / 12%);
 }
 
 .compact-button,
@@ -153,7 +189,7 @@ a {
 .compact-button {
   padding: 8px 13px;
   color: #fff !important;
-  background: var(--primary) !important;
+  background: var(--ink) !important;
 }
 
 .button {
@@ -163,7 +199,8 @@ a {
 
 .button.primary {
   color: #fff;
-  background: var(--primary);
+  background: linear-gradient(135deg, #fa4b6b, #e52f57);
+  box-shadow: 0 9px 20px rgb(229 47 87 / 18%);
 }
 
 .button.primary:hover:not(:disabled) {
@@ -187,18 +224,38 @@ a {
 }
 
 .content-shell {
-  width: min(1180px, calc(100% - 48px));
+  width: min(1240px, calc(100% - 48px));
   min-height: calc(100vh - 150px);
   margin: 0 auto;
-  padding: 54px 0 72px;
+  padding: 42px 0 76px;
 }
 
 .site-footer {
-  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30px max(24px, calc((100vw - 1240px) / 2));
   border-top: 1px solid var(--border);
   color: var(--muted);
-  text-align: center;
   font-size: 0.85rem;
+}
+
+.site-footer div {
+  display: grid;
+  gap: 3px;
+}
+
+.site-footer strong {
+  color: var(--ink);
+  letter-spacing: 0.06em;
+}
+
+.site-footer span {
+  font-size: 0.7rem;
+}
+
+.site-footer p {
+  margin: 0;
 }
 
 .page-stack {
@@ -232,7 +289,7 @@ a {
 .eyebrow {
   margin: 0 0 10px;
   color: var(--primary);
-  font-size: 0.78rem;
+  font-size: 0.73rem;
   font-weight: 800;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -258,9 +315,9 @@ a {
 input {
   width: 100%;
   min-height: 46px;
-  border: 1px solid #cfd8e8;
-  border-radius: 10px;
-  color: #172033;
+  border: 1px solid #dcd6e0;
+  border-radius: 12px;
+  color: var(--ink);
   background: #fff;
   padding: 10px 13px;
 }
@@ -271,8 +328,8 @@ input::placeholder {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px 22px;
 }
 
 .concert-card,
@@ -291,18 +348,161 @@ input::placeholder {
 
 .concert-card {
   display: flex;
-  min-height: 270px;
   flex-direction: column;
-  padding: 24px;
-  border-radius: 18px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  box-shadow: 0 16px 35px rgb(37 25 45 / 8%);
+  transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.concert-card h2,
+.concert-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 22px 42px rgb(37 25 45 / 14%);
+}
+
+.concert-card h3,
 .reservation-card h2 {
-  margin: 16px 0 18px;
-  font-size: 1.2rem;
+  margin: 12px 0 16px;
+  color: var(--ink);
+  font-size: 1.08rem;
   line-height: 1.4;
   word-break: break-word;
+}
+
+.concert-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.artwork-link {
+  display: block;
+  text-decoration: none;
+}
+
+.concert-artwork {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(145deg, #442755, #e44165);
+}
+
+.concert-artwork.card {
+  aspect-ratio: 4 / 5;
+}
+
+.concert-artwork.detail {
+  width: min(390px, 100%);
+  aspect-ratio: 4 / 5.25;
+  border-radius: 20px;
+  box-shadow: 0 30px 60px rgb(28 18 34 / 25%);
+}
+
+.concert-artwork.artwork-0 { background: linear-gradient(145deg, #1f183d, #6f36ad 58%, #ff5b7d); }
+.concert-artwork.artwork-1 { background: linear-gradient(145deg, #152643, #087ea4 58%, #5ee2d1); }
+.concert-artwork.artwork-2 { background: linear-gradient(145deg, #38131f, #ba2d4f 58%, #ffbf69); }
+.concert-artwork.artwork-3 { background: linear-gradient(145deg, #121f1c, #087f5b 58%, #90e0a7); }
+.concert-artwork.artwork-4 { background: linear-gradient(145deg, #20162d, #5842a9 58%, #ee6cbd); }
+.concert-artwork.artwork-5 { background: linear-gradient(145deg, #26150d, #a95118 58%, #f5d061); }
+
+.artwork-orbit {
+  position: absolute;
+  z-index: -1;
+  top: 15%;
+  right: -35%;
+  width: 105%;
+  aspect-ratio: 1;
+  border: clamp(26px, 5vw, 46px) solid rgb(255 255 255 / 10%);
+  border-radius: 50%;
+}
+
+.artwork-orbit::after {
+  position: absolute;
+  inset: 23%;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 50%;
+  content: "";
+}
+
+.artwork-light {
+  position: absolute;
+  z-index: -1;
+  width: 2px;
+  height: 80%;
+  background: linear-gradient(transparent, rgb(255 255 255 / 65%), transparent);
+  transform: rotate(32deg);
+}
+
+.artwork-light.light-one { top: -18%; left: 23%; }
+.artwork-light.light-two { right: 16%; bottom: -20%; transform: rotate(-28deg); }
+
+.artwork-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10%;
+}
+
+.artwork-kicker {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.artwork-content > strong {
+  max-width: 90%;
+  font-size: clamp(1.35rem, 2.4vw, 2.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  text-shadow: 0 3px 18px rgb(0 0 0 / 22%);
+  word-break: keep-all;
+}
+
+.concert-artwork.card .artwork-content > strong {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.concert-artwork.detail .artwork-content > strong {
+  overflow-wrap: anywhere;
+}
+
+.artwork-date {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+
+.artwork-date span {
+  font-size: 1.35rem;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+
+.artwork-date small {
+  padding-bottom: 3px;
+  color: rgb(255 255 255 / 70%);
+  font-size: 0.65rem;
+}
+
+.artwork-number {
+  position: absolute;
+  right: 8%;
+  bottom: 7%;
+  color: rgb(255 255 255 / 42%);
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  writing-mode: vertical-rl;
 }
 
 .id-badge {
@@ -835,6 +1035,485 @@ dd {
   background: #ffeded;
 }
 
+.concert-hero {
+  position: relative;
+  display: grid;
+  min-height: 430px;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 28px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 80% 10%, rgb(255 92 128 / 35%), transparent 24rem),
+    linear-gradient(125deg, #17121d 15%, #2d1b38 58%, #5b233d);
+  box-shadow: 0 24px 60px rgb(36 19 43 / 18%);
+}
+
+.concert-hero::before {
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background-image: linear-gradient(rgb(255 255 255 / 9%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 9%) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(90deg, #000, transparent 78%);
+  content: "";
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  padding: clamp(40px, 6vw, 76px);
+}
+
+.hero-copy .eyebrow {
+  color: #ff8da3;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 5vw, 4.4rem);
+  line-height: 1.03;
+  letter-spacing: -0.065em;
+}
+
+.hero-copy > p:not(.eyebrow) {
+  max-width: 530px;
+  margin: 24px 0 0;
+  color: rgb(255 255 255 / 70%);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.hero-count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 34px;
+}
+
+.hero-count strong {
+  color: #ff6c89;
+  font-size: 2rem;
+}
+
+.hero-count span {
+  color: rgb(255 255 255 / 68%);
+  font-size: 0.86rem;
+}
+
+.hero-stage {
+  position: relative;
+  align-self: stretch;
+  min-height: 430px;
+}
+
+.hero-ticket {
+  position: absolute;
+  display: flex;
+  width: 210px;
+  height: 300px;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 28px 50px rgb(0 0 0 / 30%);
+}
+
+.ticket-back {
+  top: 50%;
+  left: 47%;
+  align-items: end;
+  color: rgb(255 255 255 / 30%);
+  background: linear-gradient(145deg, #4a355a, #17121d);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  transform: translate(-50%, -50%) rotate(13deg);
+}
+
+.ticket-front {
+  z-index: 1;
+  top: 50%;
+  left: 35%;
+  background: linear-gradient(145deg, #f54a6b, #8c1748);
+  transform: translate(-50%, -50%) rotate(-8deg);
+}
+
+.ticket-front > span,
+.ticket-front > small {
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+
+.ticket-front strong {
+  font-size: 2.05rem;
+  line-height: 0.93;
+  letter-spacing: -0.06em;
+}
+
+.hero-disc {
+  position: absolute;
+  right: -88px;
+  bottom: -72px;
+  width: 280px;
+  height: 280px;
+  border: 46px solid rgb(255 255 255 / 7%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 15%);
+}
+
+.catalog-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  padding-top: 18px;
+}
+
+.catalog-heading h2 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+  letter-spacing: -0.045em;
+}
+
+.detail-page {
+  width: min(1060px, 100%);
+  margin: 0 auto;
+}
+
+.concert-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 72px);
+}
+
+.detail-artwork-wrap > p {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.concert-detail-layout .detail-card {
+  padding: clamp(28px, 4.5vw, 50px);
+  box-shadow: 0 18px 46px rgb(37 25 45 / 8%);
+}
+
+.concert-detail-layout .detail-card h1 {
+  margin-top: 20px;
+  font-size: clamp(2rem, 4vw, 3.1rem);
+  letter-spacing: -0.055em;
+}
+
+.detail-lead {
+  margin: 16px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.concert-detail-layout .detail-metadata {
+  grid-template-columns: 1fr;
+  margin-top: 30px;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.concert-detail-layout .detail-metadata > div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  border-bottom: 1px solid #f0edf2;
+  background: #fff;
+  padding: 15px 2px;
+}
+
+.concert-detail-layout .detail-metadata > div:last-child {
+  border-bottom: 0;
+}
+
+.booking-guide {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 28px 0 18px;
+  border-radius: 14px;
+  background: #faf8fb;
+  padding: 17px;
+}
+
+.booking-guide > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.booking-guide p,
+.booking-footnote {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.booking-button {
+  min-height: 54px;
+}
+
+.booking-footnote {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.queue-card {
+  overflow: hidden;
+  padding: 0;
+}
+
+.queue-card-heading {
+  padding: 36px clamp(28px, 6vw, 54px) 28px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 90% 0%, rgb(255 96 129 / 45%), transparent 18rem),
+    linear-gradient(125deg, #17121d, #3a203d);
+}
+
+.queue-card-heading .eyebrow {
+  color: #ff8da3;
+}
+
+.queue-card-heading h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.queue-card-heading > p:last-child {
+  margin: 12px 0 0;
+  color: rgb(255 255 255 / 65%);
+}
+
+.booking-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  padding: 0 clamp(22px, 5vw, 44px);
+  border-bottom: 1px solid var(--border);
+  list-style: none;
+}
+
+.booking-steps li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 8px;
+  color: #9a929f;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.booking-steps li::after {
+  position: absolute;
+  right: 0;
+  color: #ddd7e1;
+  content: "›";
+}
+
+.booking-steps li:last-child::after {
+  content: none;
+}
+
+.booking-steps span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #efecf1;
+  font-size: 0.68rem;
+}
+
+.booking-steps li.complete,
+.booking-steps li.current {
+  color: var(--ink);
+}
+
+.booking-steps li.complete span {
+  color: #fff;
+  background: var(--ink);
+}
+
+.booking-steps li.current span {
+  color: #fff;
+  background: var(--primary);
+}
+
+.queue-card > .notice-banner,
+.queue-card > .warning-banner {
+  margin-right: clamp(28px, 6vw, 54px);
+  margin-left: clamp(28px, 6vw, 54px);
+}
+
+.queue-state {
+  padding: 32px clamp(28px, 6vw, 54px) 48px;
+}
+
+.queue-position {
+  color: var(--primary);
+  letter-spacing: -0.07em;
+}
+
+.seat-panel.auditorium {
+  border-color: #282331;
+  color: #fff;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgb(240 68 100 / 18%), transparent 36%),
+    #17141c;
+  box-shadow: 0 22px 50px rgb(24 17 30 / 16%);
+}
+
+.auditorium .stage {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: rgb(255 255 255 / 70%);
+  background: linear-gradient(180deg, #50455e, #27212f);
+  box-shadow: 0 16px 45px rgb(240 68 100 / 17%);
+}
+
+.auditorium .stage::after {
+  position: absolute;
+  right: 12%;
+  bottom: 0;
+  left: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff5878, transparent);
+  content: "";
+}
+
+.auditorium .search-field,
+.auditorium .seat-toolbar > span,
+.auditorium .seat-legend {
+  color: rgb(255 255 255 / 62%);
+}
+
+.auditorium input {
+  border-color: #3d3646;
+  color: #fff;
+  background: #25212c;
+}
+
+.auditorium input::placeholder {
+  color: #8d8494;
+}
+
+.auditorium .seat {
+  border-color: #51485f;
+  color: #e2dce8;
+  background: #302a38;
+}
+
+.auditorium .seat.available:hover:not(:disabled) {
+  border-color: #ff6f8a;
+  color: #fff;
+  background: #513142;
+}
+
+.auditorium .seat.selected {
+  border-color: #ff7891;
+  background: linear-gradient(145deg, #fa4b6b, #c8234d);
+  box-shadow: 0 0 0 3px rgb(240 68 100 / 18%), 0 8px 18px rgb(0 0 0 / 22%);
+}
+
+.auditorium .seat.held {
+  color: #a89268;
+  background: #393225;
+}
+
+.auditorium .seat.sold {
+  color: #6f6876;
+  background: #242029;
+}
+
+.auditorium .pagination button {
+  border-color: #443d4c;
+  color: #fff;
+  background: #28232f;
+}
+
+.selection-card {
+  overflow: hidden;
+  border-top: 4px solid var(--primary);
+  box-shadow: 0 18px 42px rgb(37 25 45 / 10%);
+}
+
+.selection-card::after {
+  display: block;
+  margin: 24px -24px -24px;
+  border-top: 1px dashed #dcd6e0;
+  background: #faf8fb;
+  padding: 15px;
+  color: #aaa2af;
+  content: "STT TICKET · ADMIT ONE";
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-align: center;
+}
+
+.auth-page {
+  position: relative;
+}
+
+.auth-page::before {
+  position: absolute;
+  z-index: -1;
+  width: min(720px, 90vw);
+  height: min(460px, 65vh);
+  border-radius: 50%;
+  opacity: 0.55;
+  background: radial-gradient(circle, rgb(240 68 100 / 18%), transparent 67%);
+  content: "";
+  filter: blur(10px);
+}
+
+.auth-card {
+  border-top: 4px solid var(--primary);
+  box-shadow: 0 24px 60px rgb(37 25 45 / 12%);
+}
+
+.reservation-card {
+  position: relative;
+  overflow: hidden;
+  border-left: 5px solid var(--primary);
+}
+
+.reservation-card::after {
+  position: absolute;
+  top: -7px;
+  bottom: -7px;
+  left: 66%;
+  border-left: 1px dashed #ddd7e1;
+  content: "";
+}
+
+.result-card.success-result {
+  border-top: 5px solid var(--success);
+}
+
 @media (max-width: 860px) {
   .site-header {
     grid-template-columns: 1fr auto;
@@ -848,7 +1527,7 @@ dd {
   }
 
   .card-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .seat-layout {
@@ -858,9 +1537,41 @@ dd {
   .selection-card {
     position: static;
   }
+
+  .concert-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stage {
+    display: none;
+  }
+
+  .concert-detail-layout {
+    grid-template-columns: minmax(230px, 320px) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .concert-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-artwork-wrap {
+    display: grid;
+    justify-items: center;
+  }
 }
 
 @media (max-width: 620px) {
+  .utility-bar {
+    display: none;
+  }
+
   .site-header {
     padding: 12px 16px;
   }
@@ -883,6 +1594,29 @@ dd {
     padding-top: 34px;
   }
 
+  .concert-hero {
+    min-height: auto;
+    border-radius: 20px;
+  }
+
+  .hero-copy {
+    padding: 38px 26px;
+  }
+
+  .hero-copy h1 {
+    font-size: 2.45rem;
+  }
+
+  .catalog-heading,
+  .site-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .site-footer {
+    gap: 18px;
+  }
+
   .split-heading,
   .action-panel,
   .reservation-card,
@@ -895,17 +1629,35 @@ dd {
     padding-bottom: 0;
   }
 
-  .card-grid,
   .detail-metadata {
     grid-template-columns: 1fr;
   }
 
   .concert-card {
-    min-height: 250px;
+    min-height: 0;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+    width: min(360px, 100%);
+    margin: 0 auto;
+  }
+
+  .concert-artwork.card {
+    aspect-ratio: 5 / 5.7;
   }
 
   .reservation-price {
     justify-items: start;
     text-align: left;
+  }
+
+  .reservation-card::after {
+    content: none;
+  }
+
+  .booking-steps li {
+    gap: 4px;
+    font-size: 0.7rem;
   }
 }

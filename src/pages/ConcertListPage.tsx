@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getConcerts } from '../api/concertApi'
 import { getErrorMessage } from '../api/apiClient'
 import { ErrorPanel, LoadingPanel } from '../components/Feedback'
+import ConcertArtwork from '../components/ConcertArtwork'
 import type { Concert } from '../types/api'
 import { formatLocalDateTime } from '../utils/format'
 
@@ -62,15 +63,39 @@ export default function ConcertListPage() {
 
   return (
     <main className="page-stack">
-      <section className="page-heading split-heading">
-        <div>
-          <p className="eyebrow">Concerts</p>
-          <h1>공연을 선택하세요</h1>
-          <p className="page-description">
-            백엔드에서 제공한 실제 공연 {concerts.length}개를 조회했습니다.
+      <section className="concert-hero">
+        <div className="hero-copy">
+          <p className="eyebrow">YOUR NEXT LIVE MOMENT</p>
+          <h1>
+            기다리던 무대를
+            <br />
+            가장 먼저 만나세요
+          </h1>
+          <p>
+            공연을 고르고 대기열에 참여하세요. 입장이 허용되면 원하는 좌석을
+            직접 선택할 수 있습니다.
           </p>
+          <div className="hero-count">
+            <strong>{concerts.length.toLocaleString('ko-KR')}</strong>
+            <span>개의 공연이 예매를 기다리고 있어요</span>
+          </div>
         </div>
+        <div className="hero-stage" aria-hidden="true">
+          <div className="hero-ticket ticket-back">LIVE</div>
+          <div className="hero-ticket ticket-front">
+            <span>STT</span>
+            <strong>MAKE<br />SOME<br />NOISE</strong>
+            <small>ADMIT ONE</small>
+          </div>
+          <div className="hero-disc" />
+        </div>
+      </section>
 
+      <section className="catalog-heading">
+        <div>
+          <p className="eyebrow">NOW BOOKING</p>
+          <h2>지금 예매 가능한 공연</h2>
+        </div>
         <label className="search-field">
           <span>공연 검색</span>
           <input
@@ -94,21 +119,34 @@ export default function ConcertListPage() {
         <section className="card-grid" aria-label="공연 목록">
           {visibleConcerts.map((concert) => (
             <article className="concert-card" key={concert.id}>
-              <span className="id-badge">#{concert.id}</span>
-              <h2>{concert.title}</h2>
-              <dl className="metadata-list">
-                <div>
-                  <dt>예매 시작</dt>
-                  <dd>{formatLocalDateTime(concert.reservationOpenAt)}</dd>
-                </div>
-                <div>
-                  <dt>공연 일시</dt>
-                  <dd>{formatLocalDateTime(concert.concertAt)}</dd>
-                </div>
-              </dl>
-              <Link className="card-link" to={`/concerts/${concert.id}`}>
-                상세 보기 <span aria-hidden="true">→</span>
+              <Link
+                className="artwork-link"
+                to={`/concerts/${concert.id}`}
+                aria-label={`${concert.title} 상세 보기`}
+              >
+                <ConcertArtwork
+                  concertAt={concert.concertAt}
+                  concertId={concert.id}
+                  title={concert.title}
+                />
               </Link>
+              <div className="concert-card-body">
+                <span className="id-badge">CONCERT #{concert.id}</span>
+                <h3>{concert.title}</h3>
+                <dl className="metadata-list">
+                  <div>
+                    <dt>공연</dt>
+                    <dd>{formatLocalDateTime(concert.concertAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>예매 오픈</dt>
+                    <dd>{formatLocalDateTime(concert.reservationOpenAt)}</dd>
+                  </div>
+                </dl>
+                <Link className="card-link" to={`/concerts/${concert.id}`}>
+                  예매 정보 보기 <span aria-hidden="true">→</span>
+                </Link>
+              </div>
             </article>
           ))}
         </section>

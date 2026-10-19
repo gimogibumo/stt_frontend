@@ -55,8 +55,21 @@ export default function QueuePage() {
       </Link>
 
       <section className="queue-card" aria-live="polite">
-        <p className="eyebrow">Waiting Queue</p>
-        <h1>예매 대기열</h1>
+        <div className="queue-card-heading">
+          <p className="eyebrow">TICKET QUEUE</p>
+          <h1>예매 대기열</h1>
+          <p>접속 순서에 따라 안전하게 예매 페이지로 안내합니다.</p>
+        </div>
+
+        <ol className="booking-steps" aria-label="예매 진행 단계">
+          <li className="complete"><span>1</span>공연 선택</li>
+          <li className={data?.status === 'ADMITTED' ? 'complete' : 'current'}>
+            <span>2</span>대기열
+          </li>
+          <li className={data?.status === 'ADMITTED' ? 'current' : ''}>
+            <span>3</span>좌석 선택
+          </li>
+        </ol>
 
         {locationState?.message && (
           <div className="notice-banner">{locationState.message}</div>

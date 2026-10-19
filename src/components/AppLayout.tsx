@@ -25,24 +25,34 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
+      <div className="utility-bar">
+        <span>LIVE TICKETING PLATFORM</span>
+        <span>안전한 대기열 기반 예매</span>
+      </div>
       <header className="site-header">
         <Link className="brand" to="/concerts">
-          <span className="brand-mark">ST</span>
+          <span className="brand-mark">
+            <i />
+            ST
+          </span>
           <span>
-            <strong>Survive the Traffic</strong>
-            <small>Ticketing</small>
+            <strong>STT TICKET</strong>
+            <small>Survive the Traffic</small>
           </span>
         </Link>
 
         <nav className="main-nav" aria-label="주요 메뉴">
-          <NavLink to="/concerts">공연</NavLink>
-          {user && <NavLink to="/my/reservations">내 예약</NavLink>}
+          <NavLink to="/concerts">공연 전체</NavLink>
+          {user && <NavLink to="/my/reservations">예매 내역</NavLink>}
         </nav>
 
         <div className="account-nav">
           {user ? (
             <>
-              <span className="user-name">{user.name}</span>
+              <span className="user-name">
+                <i />
+                {user.name}
+              </span>
               <button
                 className="text-button"
                 type="button"
@@ -74,7 +84,11 @@ export default function AppLayout() {
       </div>
 
       <footer className="site-footer">
-        실제 Survive the Traffic 백엔드와 연결된 Phase 6 프론트엔드
+        <div>
+          <strong>STT TICKET</strong>
+          <span>Survive the Traffic</span>
+        </div>
+        <p>실제 대기열과 좌석 상태를 기반으로 동작하는 티켓 예매 서비스</p>
       </footer>
     </div>
   )
