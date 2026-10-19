@@ -25,6 +25,12 @@ export function useQueueStatus(concertId: number): QueueStatusState {
   }, [])
 
   useEffect(() => {
+    lastStatus.current = null
+    setData(null)
+    setError(null)
+  }, [concertId])
+
+  useEffect(() => {
     if (!Number.isInteger(concertId) || concertId <= 0) {
       setError('올바르지 않은 공연 ID입니다.')
       setIsLoading(false)

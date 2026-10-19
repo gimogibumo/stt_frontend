@@ -89,4 +89,34 @@ describe('useQueueStatus', () => {
     expect(result.current.error).toBeNull()
     expect(getQueueStatusMock).toHaveBeenCalledTimes(3)
   })
+
+  it('공연이 바뀌면 이전 공연의 WAITING 상태를 재시도 판단에 사용하지 않는다', async () => {
+    const getQueueStatusMock = vi.mocked(getQueueStatus)
+    getQueueStatusMock
+      .mockResolvedValueOnce(waiting)
+      .mockRejectedValueOnce(new Error('concert 2 status failure'))
+      .mockRejectedValueOnce(new Error('unexpected retry'))
+
+    const { result, rerender } = renderHook(
+      ({ concertId }) => useQueueStatus(concertId),
+      { initialProps: { concertId: 1 } },
+    )
+
+    await flushPromises()
+    expect(result.current.data).toEqual(waiting)
+
+    rerender({ concertId: 2 })
+    await flushPromises()
+
+    expect(getQueueStatusMock).toHaveBeenCalledTimes(2)
+    expect(getQueueStatusMock).toHaveBeenLastCalledWith(2)
+    expect(result.current.data).toBeNull()
+    expect(result.current.error).toBe('concert 2 status failure')
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_000)
+    })
+
+    expect(getQueueStatusMock).toHaveBeenCalledTimes(2)
+  })
 })
