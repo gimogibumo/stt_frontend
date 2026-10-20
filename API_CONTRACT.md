@@ -33,6 +33,14 @@ controller test, and a live HTTP `200` response from the local server on port
 8080. The backend working tree's unrelated user-owned test edits were not
 modified.
 
+The admission error contract was additionally verified against backend commits
+`e3f1a07` and `7fb0656`. The unified time policy was verified against the
+backend working tree on 2026-10-20; those `Clock`-based changes were not yet
+committed at verification time and were not modified from this repository. The
+current backend working tree passed 123 tests with 0 failures, 0 errors, and 1
+skipped test. A temporary local server also returned the confirmed structured
+`403 ADMISSION_REQUIRED` response over HTTP.
+
 Source verification covers controller mappings, HTTP DTOs, enum values, exception handlers, and build dependencies. Repository-only queue result types are documented separately from JSON returned to the browser.
 
 ---
@@ -48,6 +56,34 @@ This document separates information into three levels.
 | `NEEDS BACKEND VERIFICATION` | Do not implement against an assumed shape; backend contract must be checked first |
 
 If a required item is marked `NEEDS BACKEND VERIFICATION`, the frontend agent must report a `BACKEND BLOCKER` rather than inventing a contract.
+
+## 0.1 Time Policy
+
+The backend's application clock uses `Asia/Seoul` for wall-clock domain time.
+Concert, reservation, payment, and user timestamps stored or serialized as Java
+`LocalDateTime` therefore represent Korea Standard Time even though their JSON
+strings contain no numeric offset or zone identifier.
+
+```text
+application wall-clock zone: Asia/Seoul
+JSON example:                2026-10-20T22:30:00
+meaning:                     2026-10-20 22:30 KST
+```
+
+Queue admission timestamps are stored in Redis as epoch milliseconds. Queue
+join, admission, status, and expiry checks now use the same injected `Clock` as
+the reservation and authentication services.
+
+The common expiry boundary is:
+
+```text
+valid:   now < expiresAt
+expired: now >= expiresAt
+```
+
+The frontend must not append `Z`, parse these offset-less `LocalDateTime`
+strings as UTC, or apply the browser's local-zone conversion. Formatting the
+string components directly is the confirmed behavior.
 
 ---
 
@@ -285,9 +321,11 @@ export interface ConcertSummary {
 
 ### Notes
 
-Dates are ISO-8601 local date-time JSON strings produced from Java `LocalDateTime`. They contain no UTC offset or time-zone identifier.
-
-The frontend may format them for display but must not append `Z` or silently treat them as UTC. The backend contract does not currently identify the intended time zone.
+Dates are ISO-8601 local date-time JSON strings produced from Java
+`LocalDateTime`. They contain no explicit offset or zone identifier, but their
+contractual wall-clock zone is `Asia/Seoul`. The frontend formats the string
+components directly and must not reinterpret them through the browser's local
+time zone.
 
 ### Errors
 
@@ -535,7 +573,9 @@ Reservation
 PENDING
 ```
 
-A reservation hold expires five minutes after creation in the current service implementation. `expiresAt` is also a timezone-less Java `LocalDateTime` string.
+A reservation hold expires five minutes after creation. `expiresAt` is an
+offset-less Java `LocalDateTime` string representing `Asia/Seoul`. The hold is
+valid only while `now < expiresAt`; equality is already expired.
 
 ### Important Error Behavior
 
@@ -543,7 +583,7 @@ Current controller tests establish the intended HTTP behavior:
 
 ```text
 admission missing or expired
-→ 429 ADMISSION_REQUIRED
+→ 403 ADMISSION_REQUIRED
 
 unauthenticated session
 → 401 without a guaranteed error body
@@ -566,7 +606,7 @@ Admission and concert-seat mismatch responses are:
 ```json
 {
   "code": "ADMISSION_REQUIRED",
-  "message": "Reservation admission is required"
+  "message": "예매 입장이 필요합니다."
 }
 ```
 
@@ -637,8 +677,9 @@ export interface ReservationDetail {
 }
 ```
 
-`expiresAt` is a timezone-less Java `LocalDateTime` string. The payment page
-uses this endpoint to restore the reservation summary after a browser refresh.
+`expiresAt` is an offset-less Java `LocalDateTime` string representing
+`Asia/Seoul`. The payment page uses this endpoint to restore the reservation
+summary after a browser refresh.
 
 ### Errors
 
@@ -906,6 +947,10 @@ Logical queue states are returned as successful HTTP `200` responses. `NOT_JOINE
 
 `ADMITTED` is **not** a single-use reservation token. It means that the user has a temporary reservation access window. The current backend TTL is exactly five minutes.
 
+Admission uses the shared backend `Clock`. It remains valid only while the
+stored epoch-millisecond expiry is greater than the current clock value. At the
+exact expiry instant (`now >= expiresAt`) it is no longer `ADMITTED`.
+
 During that valid window the user may perform multiple reservation attempts. Do not implement:
 
 ```text
@@ -923,6 +968,25 @@ When admission expires, status becomes logically `NOT_JOINED` and the user may j
 ## 7.5 Queue Error Contract
 
 The queue controller defines no queue-specific domain error response.
+
+The queue-derived reservation admission guard does define a stable error. When
+`POST /api/reservations` is attempted without a currently valid `ADMITTED`
+window, it returns:
+
+```http
+HTTP/1.1 403 Forbidden
+```
+
+```json
+{
+  "code": "ADMISSION_REQUIRED",
+  "message": "예매 입장이 필요합니다."
+}
+```
+
+This structured domain `403` is distinct from a Spring Security/CSRF `403`,
+which has no guaranteed JSON body. The frontend must branch on
+`code === "ADMISSION_REQUIRED"`, not on status `403` alone.
 
 Unauthenticated requests return HTTP `401`. A join request with missing or invalid CSRF credentials returns HTTP `403`. Neither security response has a guaranteed `{ code, message }` body.
 
@@ -980,7 +1044,9 @@ Do not run multiple polling intervals for the same queue page.
 
 `CONFIRMED FOR HANDLED DOMAIN EXCEPTIONS`
 
-`GlobalExceptionHandler` returns this exact shape for `BusinessException`, request validation failures, `AdmissionRequiredException`, and `SeatConcertMismatchException`:
+`GlobalExceptionHandler` returns this exact shape for `BusinessException`
+(including `AdmissionRequiredException`), request validation failures, and
+`SeatConcertMismatchException`:
 
 ```json
 {
@@ -1017,7 +1083,7 @@ HTTP status must remain the primary fallback signal. Do not expose a backend sta
 | `409` | `DUPLICATE_EMAIL` | `이미 사용 중인 이메일입니다.` |
 | `409` | `RESERVATION_NOT_PENDING` | `예약 상태가 'PENDING'이 아닙니다.` |
 | `409` | `RESERVATION_EXPIRED` | `예약이 만료되었습니다.` |
-| `429` | `ADMISSION_REQUIRED` | `Reservation admission is required` |
+| `403` | `ADMISSION_REQUIRED` | `예매 입장이 필요합니다.` |
 
 `INTERNAL_SERVER_ERROR` exists in the backend enum but is not currently emitted by a generic handler. Do not depend on receiving that code for every HTTP `500`.
 
@@ -1034,10 +1100,9 @@ The following semantics are established by current controllers and tests:
 | `204` | Logout succeeded; response has no body |
 | `400` | Validated request is invalid, seat/concert mismatch, or a framework conversion failure |
 | `401` | Login credentials are wrong, or an authenticated endpoint has no valid session |
-| `403` | CSRF credential is missing/invalid, or the browser origin is not allowed |
+| `403` | CSRF credential is missing/invalid, browser origin is not allowed, or reservation admission is required; inspect `code` when a JSON body exists |
 | `404` | Referenced resource such as User / Seat does not exist |
 | `409` | Duplicate email, seat unavailable, reservation not pending, or reservation expired |
-| `429` | Reservation admission is missing or expired |
 | `500` | Unexpected or currently unhandled server error; error body is not guaranteed |
 
 Only `INVALID_CREDENTIALS` is a confirmed structured `401`. Security-filter `401` and `403` responses do not guarantee the common JSON shape.
@@ -1189,9 +1254,16 @@ Signup and login bean-validation failures return `INVALID_REQUEST`. Reservation 
 
 This does not block valid-request flows, but frontend error parsing must be tolerant.
 
-## Date-Time Zone
+## Time Policy Status
 
-Concert and reservation timestamps are serialized from `LocalDateTime` without an offset or zone. The backend contract should define the intended zone before deployment across environments or users in different time zones.
+The previous unspecified-zone gap is resolved in the current backend working
+tree. A shared `Clock` configured for `Asia/Seoul` now drives authentication,
+reservation creation/payment, queue join/admission/status, and performance seed
+timestamps. Queue expiry uses epoch milliseconds, while JSON `LocalDateTime`
+values remain offset-less and are interpreted as Korea Standard Time.
+
+The frontend already formats those JSON strings without JavaScript `Date`
+conversion, so no client-side time shift is applied.
 
 These gaps do not block creation of:
 
