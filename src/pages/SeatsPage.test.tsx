@@ -52,6 +52,10 @@ describe('SeatsPage', () => {
       <MemoryRouter initialEntries={['/concerts/1/seats']}>
         <Routes>
           <Route path="/concerts/:concertId/seats" element={<SeatsPage />} />
+          <Route
+            path="/concerts/:concertId/queue"
+            element={<h1>예매 대기열</h1>}
+          />
         </Routes>
       </MemoryRouter>,
     )
@@ -65,5 +69,32 @@ describe('SeatsPage', () => {
     ).toBeInTheDocument()
     await waitFor(() => expect(getConcertSeats).toHaveBeenCalledTimes(2))
     expect(seatButton).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('입장 권한이 만료되면 구조화된 403 코드를 확인해 대기열로 이동한다', async () => {
+    vi.mocked(createReservation).mockRejectedValue(
+      new ApiError(403, '예매 입장이 필요합니다.', 'ADMISSION_REQUIRED'),
+    )
+    const user = userEvent.setup()
+
+    render(
+      <MemoryRouter initialEntries={['/concerts/1/seats']}>
+        <Routes>
+          <Route path="/concerts/:concertId/seats" element={<SeatsPage />} />
+          <Route
+            path="/concerts/:concertId/queue"
+            element={<h1>예매 대기열</h1>}
+          />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    await user.click(await screen.findByRole('button', { name: /A 1-1/ }))
+    await user.click(screen.getByRole('button', { name: '이 좌석 예약하기' }))
+
+    expect(
+      await screen.findByRole('heading', { name: '예매 대기열' }),
+    ).toBeInTheDocument()
+    expect(createReservation).toHaveBeenCalledTimes(1)
   })
 })
