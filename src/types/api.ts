@@ -68,6 +68,17 @@ export interface CreateReservationResponse {
   expiresAt: string
 }
 
+export interface ReservationDetail {
+  reservationId: number
+  concertTitle: string
+  section: string
+  row: number
+  seatNumber: number
+  price: number
+  status: ReservationStatus
+  expiresAt: string
+}
+
 export type PaymentStatus = 'READY' | 'SUCCESS' | 'FAILED' | 'CANCELLED'
 
 export interface PaymentResponse {

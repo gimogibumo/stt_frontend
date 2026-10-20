@@ -3,6 +3,7 @@ import type {
   CreateReservationRequest,
   CreateReservationResponse,
   PaymentResponse,
+  ReservationDetail,
   UserReservation,
 } from '../types/api'
 
@@ -22,6 +23,12 @@ export function payReservation(
     `/api/reservations/${reservationId}/payments`,
     { method: 'POST' },
   )
+}
+
+export function getReservation(
+  reservationId: number,
+): Promise<ReservationDetail> {
+  return apiRequest<ReservationDetail>(`/api/reservations/${reservationId}`)
 }
 
 export function getMyReservations(): Promise<UserReservation[]> {

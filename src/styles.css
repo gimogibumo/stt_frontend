@@ -945,6 +945,38 @@ dd {
   margin-top: 28px;
 }
 
+.payment-card {
+  overflow: hidden;
+  border-top: 4px solid var(--primary);
+}
+
+.payment-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.payment-heading h1 {
+  margin: 0;
+}
+
+.payment-heading .status-chip {
+  margin-top: 7px;
+}
+
+.payment-card .payment-summary {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #faf8fb;
+  padding: 8px 18px;
+}
+
+.payment-card .payment-summary > div:last-child {
+  border-bottom: 0;
+}
+
 .payment-summary + .notice-banner,
 .payment-summary + .error-banner,
 .notice-banner + .error-banner {
@@ -1659,5 +1691,10 @@ dd {
   .booking-steps li {
     gap: 4px;
     font-size: 0.7rem;
+  }
+
+  .payment-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

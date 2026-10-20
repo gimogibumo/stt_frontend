@@ -27,6 +27,12 @@ The complete backend test suite passed against that revision:
 1 skipped
 ```
 
+The reservation-detail contract in section 4.2 was additionally verified on
+2026-10-20 against backend commit `5ce200a` (`feat: 단건 예약 조회 추가`), its
+controller test, and a live HTTP `200` response from the local server on port
+8080. The backend working tree's unrelated user-owned test edits were not
+modified.
+
 Source verification covers controller mappings, HTTP DTOs, enum values, exception handlers, and build dependencies. Repository-only queue result types are documented separately from JSON returned to the browser.
 
 ---
@@ -585,6 +591,61 @@ Recommended UX:
 ```
 
 Do not automatically retry the same seat reservation.
+
+---
+
+## 4.2 Get Reservation Detail
+
+`CONFIRMED`
+
+```http
+GET /api/reservations/{reservationId}
+```
+
+This endpoint requires an authenticated session. The backend resolves the
+reservation using both `reservationId` and the authenticated user ID. A
+reservation owned by another user is intentionally indistinguishable from a
+missing reservation.
+
+### Response
+
+```json
+{
+  "reservationId": 1001,
+  "concertTitle": "2026 Backend Festival",
+  "section": "A",
+  "row": 1,
+  "seatNumber": 1,
+  "price": 150000,
+  "status": "PENDING",
+  "expiresAt": "2026-10-20T14:30:00"
+}
+```
+
+### Frontend Type
+
+```ts
+export interface ReservationDetail {
+  reservationId: number;
+  concertTitle: string;
+  section: string;
+  row: number;
+  seatNumber: number;
+  price: number;
+  status: ReservationStatus;
+  expiresAt: string;
+}
+```
+
+`expiresAt` is a timezone-less Java `LocalDateTime` string. The payment page
+uses this endpoint to restore the reservation summary after a browser refresh.
+
+### Errors
+
+| HTTP Status | Code | Meaning |
+|---|---|---|
+| `401` | not guaranteed | No authenticated session |
+| `404` | `RESERVATION_NOT_FOUND` | Reservation does not exist or belongs to another user |
 
 ---
 
