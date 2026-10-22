@@ -40,6 +40,20 @@ VITE_API_BASE_URL=http://localhost:8080
 
 실제 비밀값은 커밋하지 않습니다.
 
+## AWS 배포
+
+프로덕션 빌드는 `.env.production`의 빈 `VITE_API_BASE_URL`을 사용하여 같은
+출처의 `/api/*`를 호출합니다. CloudFront에서 이 경로를 기존 백엔드 ALB로
+전달하는 구성을 전제로 합니다.
+
+배포 주소는 https://d2eomise0zoyt8.cloudfront.net 입니다. private S3 + CloudFront
+배포와 실제 브라우저의 로그인·대기열·예약·결제·마이티켓 흐름을 검증했습니다.
+GitHub Actions는 `main`에서 테스트·빌드 후 OIDC로 배포하도록 구성했습니다.
+
+리소스 구성, 현재 검증 상태, 재배포·롤백 방법은
+[프론트엔드 AWS 배포 기록](./docs/deployment/frontend-aws-deployment.md)을
+참고하세요.
+
 ## 주요 경로
 
 | 경로 | 기능 |

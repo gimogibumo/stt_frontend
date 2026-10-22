@@ -1,0 +1,98 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Least-privilege frontend deployment role using the existing GitHub OIDC provider",
+  "Parameters": {
+    "FrontendBucket": {
+      "Type": "String",
+      "AllowedPattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    },
+    "DistributionId": {
+      "Type": "String",
+      "AllowedPattern": "^[A-Z0-9]{10,20}$"
+    },
+    "GitHubSubject": {
+      "Type": "String",
+      "Default": "repo:gimogibumo@149920842/stt_frontend@1425037988:ref:refs/heads/main",
+      "AllowedValues": [
+        "repo:gimogibumo@149920842/stt_frontend@1425037988:ref:refs/heads/main"
+      ]
+    }
+  },
+  "Resources": {
+    "DeployRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": { "Ref": "AWS::StackName" },
+        "Description": "Only gimogibumo/stt_frontend main may upload frontend releases and invalidate its distribution",
+        "MaxSessionDuration": 3600,
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": {
+                  "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com"
+                }
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                  "token.actions.githubusercontent.com:sub": {
+                    "Ref": "GitHubSubject"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "FrontendReleaseUploadAndInvalidation",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "InspectFrontendBucket",
+                  "Effect": "Allow",
+                  "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:s3:::${FrontendBucket}"
+                  }
+                },
+                {
+                  "Sid": "UploadAndRestoreFrontendObjects",
+                  "Effect": "Allow",
+                  "Action": ["s3:GetObject", "s3:PutObject"],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:s3:::${FrontendBucket}/*"
+                  }
+                },
+                {
+                  "Sid": "InspectAndInvalidateFrontendDistribution",
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudfront:GetDistribution",
+                    "cloudfront:CreateInvalidation",
+                    "cloudfront:GetInvalidation"
+                  ],
+                  "Resource": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${DistributionId}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          { "Key": "Project", "Value": "survive-the-traffic" },
+          { "Key": "Component", "Value": "frontend" }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DeployRoleArn": { "Value": { "Fn::GetAtt": ["DeployRole", "Arn"] } }
+  }
+}

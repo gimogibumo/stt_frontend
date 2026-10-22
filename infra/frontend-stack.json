@@ -1,0 +1,225 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "STT frontend: private S3, CloudFront OAC, SPA routing and existing ALB API proxy",
+  "Parameters": {
+    "BackendDomain": {
+      "Type": "String",
+      "AllowedPattern": "^[a-z0-9.-]+\\.elb\\.amazonaws\\.com$",
+      "Description": "Existing ALB DNS hostname only, without scheme or path"
+    }
+  },
+  "Resources": {
+    "FrontendBucket": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "${AWS::StackName}-${AWS::AccountId}-${AWS::Region}"
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [{ "ObjectOwnership": "BucketOwnerEnforced" }]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            { "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" } }
+          ]
+        },
+        "VersioningConfiguration": { "Status": "Enabled" },
+        "Tags": [
+          { "Key": "Project", "Value": "survive-the-traffic" },
+          { "Key": "Component", "Value": "frontend" }
+        ]
+      }
+    },
+    "OriginAccessControl": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": { "Fn::Sub": "${AWS::StackName}-s3-oac" },
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "StaticCachePolicy": {
+      "Type": "AWS::CloudFront::CachePolicy",
+      "Properties": {
+        "CachePolicyConfig": {
+          "Name": {
+            "Fn::Sub": "${AWS::StackName}-static-origin-cache-control"
+          },
+          "MinTTL": 0,
+          "DefaultTTL": 0,
+          "MaxTTL": 31536000,
+          "ParametersInCacheKeyAndForwardedToOrigin": {
+            "EnableAcceptEncodingBrotli": true,
+            "EnableAcceptEncodingGzip": true,
+            "CookiesConfig": { "CookieBehavior": "none" },
+            "HeadersConfig": { "HeaderBehavior": "none" },
+            "QueryStringsConfig": { "QueryStringBehavior": "none" }
+          }
+        }
+      }
+    },
+    "SpaRouter": {
+      "Type": "AWS::CloudFront::Function",
+      "Properties": {
+        "Name": { "Fn::Sub": "${AWS::StackName}-spa-router" },
+        "AutoPublish": true,
+        "FunctionConfig": {
+          "Comment": "Rewrite extensionless SPA paths on the static behavior only",
+          "Runtime": "cloudfront-js-2.0"
+        },
+        "FunctionCode": "function handler(event) {\n  var request = event.request;\n  var uri = request.uri;\n  if ((request.method === 'GET' || request.method === 'HEAD') && uri !== '/api' && uri.indexOf('/api/') !== 0 && uri.indexOf('/assets/') !== 0 && uri.indexOf('/images/') !== 0 && uri.substring(uri.lastIndexOf('/') + 1).indexOf('.') === -1) {\n    request.uri = '/index.html';\n  }\n  return request;\n}\n"
+      }
+    },
+    "Distribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Enabled": true,
+          "Comment": "Survive the Traffic frontend",
+          "DefaultRootObject": "index.html",
+          "HttpVersion": "http2and3",
+          "IPV6Enabled": true,
+          "PriceClass": "PriceClass_200",
+          "ViewerCertificate": { "CloudFrontDefaultCertificate": true },
+          "Origins": [
+            {
+              "Id": "frontend-s3",
+              "DomainName": {
+                "Fn::GetAtt": ["FrontendBucket", "RegionalDomainName"]
+              },
+              "OriginAccessControlId": {
+                "Fn::GetAtt": ["OriginAccessControl", "Id"]
+              },
+              "S3OriginConfig": { "OriginAccessIdentity": "" }
+            },
+            {
+              "Id": "backend-alb",
+              "DomainName": { "Ref": "BackendDomain" },
+              "CustomOriginConfig": {
+                "HTTPPort": 80,
+                "HTTPSPort": 443,
+                "OriginProtocolPolicy": "http-only",
+                "OriginReadTimeout": 30,
+                "OriginKeepaliveTimeout": 5
+              }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "frontend-s3",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": ["GET", "HEAD"],
+            "CachedMethods": ["GET", "HEAD"],
+            "Compress": true,
+            "CachePolicyId": { "Ref": "StaticCachePolicy" },
+            "FunctionAssociations": [
+              {
+                "EventType": "viewer-request",
+                "FunctionARN": { "Fn::GetAtt": ["SpaRouter", "FunctionARN"] }
+              }
+            ]
+          },
+          "CacheBehaviors": [
+            {
+              "PathPattern": "/api/*",
+              "TargetOriginId": "backend-alb",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "POST",
+                "PATCH",
+                "DELETE"
+              ],
+              "CachedMethods": ["GET", "HEAD"],
+              "Compress": true,
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
+            },
+            {
+              "PathPattern": "/api",
+              "TargetOriginId": "backend-alb",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "POST",
+                "PATCH",
+                "DELETE"
+              ],
+              "CachedMethods": ["GET", "HEAD"],
+              "Compress": true,
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
+            }
+          ]
+        },
+        "Tags": [
+          { "Key": "Project", "Value": "survive-the-traffic" },
+          { "Key": "Component", "Value": "frontend" }
+        ]
+      }
+    },
+    "BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": { "Ref": "FrontendBucket" },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowThisDistributionOnly",
+              "Effect": "Allow",
+              "Principal": { "Service": "cloudfront.amazonaws.com" },
+              "Action": "s3:GetObject",
+              "Resource": { "Fn::Sub": "${FrontendBucket.Arn}/*" },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+                  }
+                }
+              }
+            },
+            {
+              "Sid": "DenyInsecureTransport",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                { "Fn::GetAtt": ["FrontendBucket", "Arn"] },
+                { "Fn::Sub": "${FrontendBucket.Arn}/*" }
+              ],
+              "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "BucketName": { "Value": { "Ref": "FrontendBucket" } },
+    "DistributionId": { "Value": { "Ref": "Distribution" } },
+    "DistributionDomain": {
+      "Value": { "Fn::GetAtt": ["Distribution", "DomainName"] }
+    },
+    "FrontendOrigin": {
+      "Value": { "Fn::Sub": "https://${Distribution.DomainName}" }
+    },
+    "SpaFunctionName": { "Value": { "Ref": "SpaRouter" } }
+  }
+}

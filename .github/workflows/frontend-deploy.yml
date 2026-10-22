@@ -1,0 +1,83 @@
+name: Frontend Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**/*.md']
+  workflow_dispatch:
+    inputs:
+      rollback_release_id:
+        description: 'Optional existing S3 release ID to restore; leave blank for a new deployment'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stt-frontend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      VITE_API_BASE_URL: ''
+      AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+      FRONTEND_ORIGIN: ${{ vars.FRONTEND_ORIGIN }}
+      RELEASE_ID: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+      ROLLBACK_RELEASE_ID: ${{ inputs.rollback_release_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run test:infra
+      - run: npm run build
+      - name: Verify deployment variables
+        shell: bash
+        run: |
+          for name in AWS_ACCOUNT_ID AWS_REGION S3_BUCKET CLOUDFRONT_DISTRIBUTION_ID FRONTEND_ORIGIN; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing repository variable: $name" >&2
+              exit 1
+            fi
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: frontend-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Authenticate to AWS with OIDC
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          allowed-account-ids: ${{ vars.AWS_ACCOUNT_ID }}
+          role-session-name: frontend-${{ github.run_id }}
+          role-duration-seconds: 1800
+      - name: Publish or restore frontend
+        shell: bash
+        run: |
+          if [[ -n "$ROLLBACK_RELEASE_ID" ]]; then
+            node scripts/deploy-frontend.mjs --rollback "$ROLLBACK_RELEASE_ID"
+          else
+            node scripts/deploy-frontend.mjs
+          fi
+      - name: Verify deployed HTTPS site and API
+        run: node scripts/smoke-frontend.mjs "$FRONTEND_ORIGIN"

@@ -8,6 +8,33 @@ describe('apiRequest', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+  })
+
+  it('프로덕션에서는 같은 출처의 API를 호출한다', async () => {
+    vi.stubEnv('PROD', true)
+    vi.stubEnv('VITE_API_BASE_URL', undefined)
+    vi.mocked(fetch).mockResolvedValue(new Response('[]'))
+
+    const { apiRequest } = await import('./apiClient')
+    await apiRequest('/api/concerts')
+
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/concerts',
+      expect.objectContaining({ credentials: 'include' }),
+    )
+  })
+
+  it('빈 API 주소 설정도 같은 출처로 유지한다', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', '')
+    const { API_BASE_URL } = await import('./apiClient')
+    expect(API_BASE_URL).toBe('')
+  })
+
+  it('명시한 API 주소의 마지막 슬래시를 제거한다', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.test/')
+    const { API_BASE_URL } = await import('./apiClient')
+    expect(API_BASE_URL).toBe('https://api.example.test')
   })
 
   it('변경 요청 전에 CSRF 쿠키를 발급받고 같은 값을 헤더에 보낸다', async () => {

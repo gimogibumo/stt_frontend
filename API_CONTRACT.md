@@ -1129,6 +1129,12 @@ Deployment can override it with:
 FRONTEND_ORIGIN=<exact frontend origin>
 ```
 
+The user confirmed on 2026-10-22 that `FRONTEND_ORIGIN` maps to Spring property
+`app.cors.allowed-origins`. Supply an origin such as
+`https://d2eomise0zoyt8.cloudfront.net`, without a path or trailing slash. This
+configuration contract does not imply that the value has already been applied
+to the deployed backend.
+
 Confirmed policy:
 
 ```text
