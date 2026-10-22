@@ -1135,6 +1135,12 @@ The user confirmed on 2026-10-22 that `FRONTEND_ORIGIN` maps to Spring property
 configuration contract does not imply that the value has already been applied
 to the deployed backend.
 
+After the backend owner applied that origin on 2026-10-22, the CloudFront HTTPS
+origin passed live CSRF, signup/login, session restoration, queue admission,
+reservation, payment, and My Reservations checks. Observed cookie attributes and
+the remaining origin-transport security limitations are recorded in
+`docs/deployment/frontend-aws-deployment.md`.
+
 Confirmed policy:
 
 ```text

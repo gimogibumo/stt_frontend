@@ -1,17 +1,21 @@
 # 프론트엔드 AWS 배포 진행 기록
 
-확인일: 2026-10-22 (KST)
+최종 확인일: 2026-10-23 (KST)
 
 ## 현재 상태
 
 `CODEX_FRONTEND_AWS_DEPLOY.md`의 프론트 분석, 인프라 생성, 수동 배포 및 실제
 브라우저 인증·예매 E2E를 완료했다. 백엔드 담당자가 `FRONTEND_ORIGIN`을 적용한
 후 CORS 차단이 해소됐다. CI/CD workflow, 최소 권한 IAM 역할 및 GitHub 변수
-6개를 구성했으며 실제 GitHub Actions 실행 검증을 이어서 진행한다.
+6개를 구성했고 실제 GitHub CI와 OIDC 자동 배포도 성공했다. 초기 릴리스 롤백과
+그 이후 최신 커밋 복구 배포까지 검증했다.
 
 서비스 주소: **https://d2eomise0zoyt8.cloudfront.net**
 
 초기 릴리스: `manual-20261022-initial`
+
+현재 배포 릴리스: `58a4296cc3b841c93913594785f7f7093d43aebc-39800368570-1`
+문서만 수정하는 커밋은 배포를 생략하므로 이 릴리스가 계속 서비스된다.
 
 기존 디자인 변경을 보존했다. 백엔드 소스, Kubernetes 설정 및 Secret은 수정하지
 않았고 Secret 값도 조회하지 않았다.
@@ -205,8 +209,16 @@ node scripts/smoke-frontend.mjs https://d2eomise0zoyt8.cloudfront.net
 
 스크립트는 해당 릴리스를 임시 디렉토리에 내려받고 빌드 구조를 검증한 뒤,
 자산을 먼저 배포하고 HTML을 마지막에 교체한다. CloudFront 캐시도 갱신한다.
-현재 보존된 초기 릴리스는 존재하지만, 실제 롤백 실행 자체는 아직 검증하지 않았다.
-버킷 버전 관리도 켜져 있다. 오래된 릴리스/버전 정리 정책은 아직 추가하지 않았다.
+실제 GitHub OIDC workflow로 다음 순서를 검증했다.
+
+1. [초기 릴리스 롤백](https://github.com/gimogibumo/stt_frontend/actions/runs/39799156884):
+   배포 job 성공, S3 HTML 교체, CloudFront invalidation
+   `I29J9K8AEB4Q1XBBH4BS8MB0EJ` 완료 및 전체 HTTPS/API smoke test 통과.
+2. [최신 커밋 복구 배포](https://github.com/gimogibumo/stt_frontend/actions/runs/39800368570):
+   workflow 성공, 새 S3 릴리스 생성 및 전체 HTTPS/API smoke test 통과.
+
+최종 상태는 위의 최신 커밋 복구 릴리스다. 버킷 버전 관리도 켜져 있다.
+오래된 릴리스/버전 정리 정책은 아직 추가하지 않았다.
 
 ## GitHub Actions와 OIDC
 
@@ -219,6 +231,20 @@ node scripts/smoke-frontend.mjs https://d2eomise0zoyt8.cloudfront.net
 - 수동 실행의 `rollback_release_id`에 기존 릴리스 ID를 넣으면 같은 workflow로
   롤백한다. 입력은 환경 변수로 전달하고 배포 스크립트가 경로·와일드카드를 거절한다.
 - 공식 Actions는 조회한 릴리스의 전체 commit SHA로 고정했다. actionlint도 통과했다.
+
+실제 실행 결과:
+
+- [Frontend CI 성공](https://github.com/gimogibumo/stt_frontend/actions/runs/39798431746)
+- [Frontend Deploy 성공](https://github.com/gimogibumo/stt_frontend/actions/runs/39798431732)
+- 검증 커밋: `58a4296cc3b841c93913594785f7f7093d43aebc`
+- S3에 `releases/58a4296cc3b841c93913594785f7f7093d43aebc-39798431732-1/`의
+  HTML·JS·CSS·이미지가 생성된 것을 직접 확인했다.
+- CloudFront invalidation `I6YALDM7XGELSM8GKJN13X9EH6` 완료 및 배포 후 전체
+  HTTPS/API smoke test 통과도 확인했다.
+
+첫 CI 환경 확인에서 빈 API 환경변수가 기존 CSRF 테스트의 하드코딩 주소에 영향을
+주는 문제를 재현했다. 테스트의 기본 환경을 명시적으로 격리한 뒤, CI와 같은
+`VITE_API_BASE_URL='' npm test` 조건에서 13개 테스트가 통과했다.
 
 `infra/github-deploy-role.json`은 기존 OIDC 공급자를 참조하는 IAM 역할 하나만
 생성한다. 신뢰 조건은 audience `sts.amazonaws.com` 및 다음 subject의 정확한
@@ -287,8 +313,10 @@ ADMITTED로 유지됨을 확인했다. 테스트 데이터는 공연 2의 예약
   API 비캐시, 공연 조회, 미인증 `401` 보존까지 통과.
 - 로그인·대기열·예약·결제 브라우저 E2E: 위 실제 브라우저 기록 참고.
 - IAM 역할 및 GitHub 비밀이 아닌 변수 6개 등록·검증 완료.
-- workflow YAML 파싱 및 actionlint 검증 통과. 실제 GitHub Actions 실행 결과는
-  첫 배포 후 기록한다.
+- workflow YAML 파싱 및 actionlint 검증 통과.
+- 실제 GitHub CI와 OIDC 자동 배포 성공, S3 릴리스 및 CloudFront 반영 확인.
+- 실제 workflow 롤백 후 최신 커밋 복구 성공. 두 단계 모두 공개 사이트·API를
+  재검증했다. GitHub에서 추가로 설정할 값이나 남은 기능상 백엔드 차단은 없다.
 
 ## Troubleshooting
 
