@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 describe('apiRequest', () => {
   beforeEach(() => {
     vi.resetModules()
+    vi.stubEnv('PROD', false)
+    vi.stubEnv('VITE_API_BASE_URL', undefined)
     vi.stubGlobal('fetch', vi.fn())
   })
 
