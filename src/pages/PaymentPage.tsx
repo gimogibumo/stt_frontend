@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../api/apiClient'
 import { getReservation, payReservation } from '../api/reservationApi'
 import { ErrorPanel, LoadingPanel } from '../components/Feedback'
+import BookingSteps from '../components/BookingSteps'
 import type { PaymentResponse, ReservationDetail } from '../types/api'
 import { formatCurrency, formatLocalDateTime } from '../utils/format'
 
@@ -81,6 +82,7 @@ export default function PaymentPage() {
   if (payment) {
     return (
       <main className="page-stack narrow-page">
+        <BookingSteps current={4} />
         <section className="result-card success-result">
           <div className="queue-icon success">✓</div>
           <p className="eyebrow">Payment complete</p>
@@ -109,6 +111,7 @@ export default function PaymentPage() {
 
   return (
     <main className="page-stack narrow-page">
+      <BookingSteps current={3} />
       <section className="detail-card payment-card">
         <div className="payment-heading">
           <div>
@@ -120,8 +123,7 @@ export default function PaymentPage() {
           </span>
         </div>
         <p className="page-description">
-          예약 내용을 확인한 뒤 결제를 진행해 주세요. 현재 단계는 백엔드의 모의
-          결제 API를 사용합니다.
+          선택한 공연과 좌석을 확인한 뒤 결제를 완료해 주세요.
         </p>
 
         <dl className="summary-list payment-summary">
@@ -143,6 +145,10 @@ export default function PaymentPage() {
             <dd>{formatLocalDateTime(reservation.expiresAt)}</dd>
           </div>
         </dl>
+
+        <p className="payment-disclaimer">
+          테스트 결제로 진행되며 실제 요금은 청구되지 않습니다.
+        </p>
 
         {unavailableMessage && (
           <div className="notice-banner" role="status">

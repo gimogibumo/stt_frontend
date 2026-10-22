@@ -48,7 +48,7 @@ export default function LoginPage() {
         <p className="eyebrow">Welcome back</p>
         <h1 id="login-title">로그인</h1>
         <p className="page-description">
-          로그인하면 대기열 입장부터 예약과 결제까지 이어서 진행할 수 있습니다.
+          기다려 온 무대와 더 가까이. 나의 다음 공연을 만나보세요.
         </p>
 
         {state?.message && <div className="success-banner">{state.message}</div>}
@@ -64,6 +64,7 @@ export default function LoginPage() {
             <input
               autoComplete="email"
               name="email"
+              placeholder="이메일 주소를 입력해 주세요"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -77,6 +78,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               minLength={8}
               name="password"
+              placeholder="비밀번호를 입력해 주세요"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -96,4 +98,3 @@ export default function LoginPage() {
     </main>
   )
 }
-

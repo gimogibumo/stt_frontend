@@ -5,6 +5,7 @@ import { getConcertSeats } from '../api/concertApi'
 import { getQueueStatus } from '../api/queueApi'
 import { createReservation } from '../api/reservationApi'
 import { ErrorPanel, LoadingPanel } from '../components/Feedback'
+import BookingSteps from '../components/BookingSteps'
 import type { QueueStatusResponse, Seat } from '../types/api'
 import { formatCurrency } from '../utils/format'
 
@@ -142,6 +143,7 @@ export default function SeatsPage() {
 
   return (
     <main className="page-stack">
+      <BookingSteps current={2} />
       <section className="page-heading">
         <Link className="back-link" to={`/concerts/${concertId}/queue`}>
           ← 대기열 상태
@@ -163,12 +165,14 @@ export default function SeatsPage() {
       {seats.length === 0 ? (
         <section className="state-panel">
           <h2>등록된 좌석이 없습니다.</h2>
-          <p>이 공연에는 현재 백엔드가 제공하는 좌석 데이터가 없습니다.</p>
+          <p>좌석이 등록되면 이곳에서 확인할 수 있습니다.</p>
         </section>
       ) : (
         <div className="seat-layout">
           <section className="seat-panel auditorium" aria-label="좌석 목록">
-            <div className="stage">STAGE</div>
+            <div className="stage">
+              S T A G E<small>무대를 바라보는 방향</small>
+            </div>
             <div className="seat-toolbar">
               <label className="search-field">
                 <span>좌석 검색</span>
@@ -188,9 +192,18 @@ export default function SeatsPage() {
               </span>
             </div>
             <div className="seat-legend">
-              <span><i className="available" /> 선택 가능</span>
-              <span><i className="held" /> 임시 예약</span>
-              <span><i className="sold" /> 판매 완료</span>
+              <span>
+                <i className="available" /> 선택 가능
+              </span>
+              <span>
+                <i className="selected" /> 선택 좌석
+              </span>
+              <span>
+                <i className="held" /> 임시 예약
+              </span>
+              <span>
+                <i className="sold" /> 판매 완료
+              </span>
             </div>
             <div className="seat-grid">
               {visibleSeats.map((seat) => {
@@ -269,4 +282,3 @@ export default function SeatsPage() {
     </main>
   )
 }
-

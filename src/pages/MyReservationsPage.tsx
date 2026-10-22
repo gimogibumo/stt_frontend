@@ -33,18 +33,32 @@ export default function MyReservationsPage() {
   }
 
   if (error) {
-    return <ErrorPanel message={error} onRetry={() => void loadReservations()} />
+    return (
+      <ErrorPanel message={error} onRetry={() => void loadReservations()} />
+    )
   }
 
   return (
-    <main className="page-stack">
+    <main className="page-stack reservations-page">
       <section className="page-heading">
         <p className="eyebrow">My Reservations</p>
-        <h1>내 예약</h1>
+        <h1>
+          마이티켓<span className="heading-dot">.</span>
+        </h1>
         <p className="page-description">
-          로그인한 사용자에게 속한 예약만 백엔드에서 조회합니다.
+          설레는 다음 만남, 나의 예매 내역을 확인하세요.
         </p>
       </section>
+
+      <div className="catalog-toolbar">
+        <p>
+          전체 예매{' '}
+          <strong>{reservations.length.toLocaleString('ko-KR')}</strong>
+        </p>
+        <Link className="back-link" to="/concerts">
+          다른 공연 둘러보기 ↗
+        </Link>
+      </div>
 
       {reservations.length === 0 ? (
         <section className="state-panel">
@@ -87,4 +101,3 @@ export default function MyReservationsPage() {
     </main>
   )
 }
-

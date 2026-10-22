@@ -25,25 +25,25 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
-      <div className="utility-bar">
-        <span>LIVE TICKETING PLATFORM</span>
-        <span>안전한 대기열 기반 예매</span>
-      </div>
+      <a className="skip-link" href="#main-content">
+        본문 바로가기
+      </a>
       <header className="site-header">
         <Link className="brand" to="/concerts">
-          <span className="brand-mark">
-            <i />
-            ST
+          <span className="brand-mark" aria-hidden="true">
+            s.
           </span>
           <span>
-            <strong>STT TICKET</strong>
-            <small>Survive the Traffic</small>
+            <strong>
+              stt<span>ticket</span>
+            </strong>
+            <small>일상이 무대가 되는 순간</small>
           </span>
         </Link>
 
         <nav className="main-nav" aria-label="주요 메뉴">
-          <NavLink to="/concerts">공연 전체</NavLink>
-          {user && <NavLink to="/my/reservations">예매 내역</NavLink>}
+          <NavLink to="/concerts">공연 둘러보기</NavLink>
+          <NavLink to="/my/reservations">마이티켓</NavLink>
         </nav>
 
         <div className="account-nav">
@@ -79,18 +79,26 @@ export default function AppLayout() {
         </div>
       )}
 
-      <div className="content-shell">
+      <div className="content-shell" id="main-content" tabIndex={-1}>
         <Outlet />
       </div>
 
       <footer className="site-footer">
-        <div>
-          <strong>STT TICKET</strong>
-          <span>Survive the Traffic</span>
+        <div className="footer-brand">
+          <strong>
+            stt<span>ticket</span>
+          </strong>
+          <p>좋아하는 공연과 만나는 가장 설레는 순간.</p>
+          <small>© STT TICKET. Survive the Traffic.</small>
         </div>
-        <p>실제 대기열과 좌석 상태를 기반으로 동작하는 티켓 예매 서비스</p>
+        <div className="footer-links">
+          <Link to="/concerts">공연 둘러보기</Link>
+          <Link to="/my/reservations">
+            나의 예매 내역 <span aria-hidden="true">↗</span>
+          </Link>
+          <span>공연의 시작부터, 당신의 자리까지.</span>
+        </div>
       </footer>
     </div>
   )
 }
-

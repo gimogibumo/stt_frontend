@@ -35,7 +35,7 @@ export default function SignupPage() {
         <p className="eyebrow">Create account</p>
         <h1 id="signup-title">회원가입</h1>
         <p className="page-description">
-          가입 후 로그인하면 서버 세션으로 사용자를 안전하게 식별합니다.
+          취향을 채우는 공연, 오래 남는 순간. 지금 시작해 보세요.
         </p>
 
         {error && (
@@ -96,4 +96,3 @@ export default function SignupPage() {
     </main>
   )
 }
-

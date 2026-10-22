@@ -66,14 +66,14 @@ export default function ConcertDetailPage() {
             title={concert.title}
             variant="detail"
           />
-          <p>공연 정보는 실제 백엔드 데이터를 기준으로 표시됩니다.</p>
+          <p>STT TICKET · LIVE ON STAGE</p>
         </div>
 
         <section className="detail-card">
-          <span className="id-badge">CONCERT #{concert.id}</span>
+          <span className="concert-category">LIVE CONCERT</span>
           <h1>{concert.title}</h1>
           <p className="detail-lead">
-            한정된 입장 시간 안에 원하는 좌석을 선택해 예매하세요.
+            기다려 온 공연, 이제 당신의 자리를 만나보세요.
           </p>
           <dl className="detail-metadata">
             <div>
@@ -94,7 +94,7 @@ export default function ConcertDetailPage() {
             <span>01</span>
             <div>
               <strong>대기열 입장</strong>
-              <p>서버가 순서대로 예매 접근을 허용합니다.</p>
+              <p>차례가 되면 좌석을 선택할 수 있습니다.</p>
             </div>
           </div>
           <Link
@@ -113,7 +113,37 @@ export default function ConcertDetailPage() {
           </p>
         </section>
       </article>
+
+      <section className="booking-notes" aria-labelledby="booking-notes-title">
+        <p className="eyebrow">BEFORE YOU BOOK</p>
+        <h2 id="booking-notes-title">예매 전 확인해 주세요</h2>
+        <div className="booking-notes-grid">
+          <div>
+            <span>01</span>
+            <h3>대기열 입장</h3>
+            <p>
+              로그인 후 대기열에 참여해 주세요. 순서가 되면 좌석 선택을 시작할
+              수 있습니다.
+            </p>
+          </div>
+          <div>
+            <span>02</span>
+            <h3>좌석 선택</h3>
+            <p>
+              좌석 현황은 변동될 수 있습니다. 예약이 완료되어야 선택한 좌석이
+              확보됩니다.
+            </p>
+          </div>
+          <div>
+            <span>03</span>
+            <h3>결제 및 확인</h3>
+            <p>
+              안내된 결제 기한 안에 결제를 완료해 주세요. 예매 내역은
+              마이티켓에서 확인할 수 있습니다.
+            </p>
+          </div>
+        </div>
+      </section>
     </main>
   )
 }
-

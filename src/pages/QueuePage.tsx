@@ -3,6 +3,7 @@ import { Link, useLocation, useParams } from 'react-router-dom'
 import { ApiError, getErrorMessage } from '../api/apiClient'
 import { joinQueue } from '../api/queueApi'
 import { ErrorPanel, LoadingPanel } from '../components/Feedback'
+import BookingSteps from '../components/BookingSteps'
 import { useQueueStatus } from '../hooks/useQueueStatus'
 
 interface LocationState {
@@ -61,15 +62,7 @@ export default function QueuePage() {
           <p>접속 순서에 따라 안전하게 예매 페이지로 안내합니다.</p>
         </div>
 
-        <ol className="booking-steps" aria-label="예매 진행 단계">
-          <li className="complete"><span>1</span>공연 선택</li>
-          <li className={data?.status === 'ADMITTED' ? 'complete' : 'current'}>
-            <span>2</span>대기열
-          </li>
-          <li className={data?.status === 'ADMITTED' ? 'current' : ''}>
-            <span>3</span>좌석 선택
-          </li>
-        </ol>
+        <BookingSteps current={data?.status === 'ADMITTED' ? 2 : 1} />
 
         {locationState?.message && (
           <div className="notice-banner">{locationState.message}</div>
@@ -85,7 +78,9 @@ export default function QueuePage() {
           <div className="queue-state">
             <div className="queue-icon">01</div>
             <h2>아직 대기열에 참여하지 않았습니다.</h2>
-            <p>대기열에 참여하면 서버가 순서대로 예매 입장을 허용합니다.</p>
+            <p>
+              대기열에 참여해 주세요. 차례가 되면 좌석을 선택할 수 있습니다.
+            </p>
             {joinError && (
               <div className="error-banner" role="alert">
                 {joinError}
@@ -114,7 +109,7 @@ export default function QueuePage() {
               갱신
             </p>
             <p className="muted-text">
-              이 페이지를 새로고침하거나 나갔다 돌아와도 서버 상태에서 복원됩니다.
+              페이지를 새로고침해도 대기 순서는 유지됩니다.
             </p>
           </div>
         )}
@@ -133,4 +128,3 @@ export default function QueuePage() {
     </main>
   )
 }
-

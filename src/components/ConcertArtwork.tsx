@@ -22,17 +22,28 @@ export default function ConcertArtwork({
       aria-hidden="true"
     >
       <div className="artwork-orbit" />
-      <div className="artwork-light light-one" />
-      <div className="artwork-light light-two" />
+      <div className="artwork-orbit orbit-two" />
+      <div className="artwork-orbit orbit-three" />
       <div className="artwork-content">
-        <span className="artwork-kicker">LIVE PERFORMANCE</span>
-        <strong>{title}</strong>
+        <span className="artwork-kicker">
+          STT TICKET PRESENTS <span>↗</span>
+        </span>
+        <div className="artwork-title">
+          <span>
+            LIVE
+            <br />
+            ON STAGE
+          </span>
+          <strong>{title}</strong>
+        </div>
         <div className="artwork-date">
-          <span>{month}.{day}</span>
+          <span>
+            {month}.{day}
+          </span>
           <small>{year}</small>
         </div>
       </div>
-      <span className="artwork-number">NO. {concertId}</span>
+      <span className="artwork-number">LIVE MUSIC · LIVE MOMENTS</span>
     </div>
   )
 }
